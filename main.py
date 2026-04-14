@@ -1,6 +1,7 @@
 import streamlit as st
 import paho.mqtt.client as mqtt
 import time
+import base64
 
 BROKER = "test.mosquitto.org"
 TOPIC = "esp32/status"
@@ -43,7 +44,17 @@ if st.session_state.esp32_connected:
     st.success("ESP32 conectado 🎉")
 
     audio_file = open("sonido.mp3", "rb")
-    st.audio(audio_file.read(), autoplay=True)
+    audio_bytes = audio_file.read()
+    b64 = base64.b64encode(audio_bytes).decode()
+
+    st.markdown(
+        f"""
+        <audio autoplay>
+            <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
+        </audio>
+        """,
+        unsafe_allow_html=True
+    )
 else:
     st.warning("Esperando conexión del ESP32...")
 
