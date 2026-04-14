@@ -12,44 +12,29 @@ if "esp32_connected" not in st.session_state:
 if "mqtt_client" not in st.session_state:
     st.session_state.mqtt_client = None
 
-if "audio_played" not in st.session_state:
-    st.session_state.audio_played = False
 
-if "update" not in st.session_state:
-    st.session_state.update = False
-
-
-# 📡 Callback MQTT
 def on_message(client, userdata, msg):
     mensaje = msg.payload.decode()
     print("Mensaje recibido:", mensaje)
 
     if mensaje == "connected":
         st.session_state.esp32_connected = True
-        st.session_state.audio_played = False
-        st.session_state.update = True  # 🔥 trigger UI
 
 
-# 🔌 Inicializar MQTT
 def init_mqtt():
     client = mqtt.Client()
     client.on_message = on_message
     client.connect(BROKER, 1883, 60)
     client.subscribe(TOPIC)
-    client.loop_start()  # 🔥 escucha en segundo plano
     return client
 
 
-# Inicializar una sola vez
+# Inicializar MQTT una sola vez
 if st.session_state.mqtt_client is None:
     st.session_state.mqtt_client = init_mqtt()
 
-
-# 🔥 Forzar actualización si llega mensaje
-if st.session_state.update:
-    st.session_state.update = False
-    st.rerun()
-
+# Procesar mensajes (NO bloqueante)
+st.session_state.mqtt_client.loop(timeout=1.0)
 
 # UI
 st.title("Monitor ESP32 🚀")
@@ -57,21 +42,11 @@ st.title("Monitor ESP32 🚀")
 if st.session_state.esp32_connected:
     st.success("ESP32 conectado 🎉")
 
-    # 🔊 Reproducir audio solo una vez
-    if not st.session_state.audio_played:
-        st.session_state.audio_played = True
-
-        st.markdown(
-            """
-            <audio autoplay>
-                <source src="sonido.mp3" type="audio/mpeg">
-            </audio>
-            """,
-            unsafe_allow_html=True
-        )
-
+    audio_file = open("sonido.mp3", "rb")
+    st.audio(audio_file.read())
 else:
     st.warning("Esperando conexión del ESP32...")
 
-# pequeño delay para no saturar
-time.sleep(0.2)
+# refresco automático
+time.sleep(1)
+st.rerun()
