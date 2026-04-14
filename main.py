@@ -49,9 +49,19 @@ if st.session_state.esp32_connected:
 
     st.markdown(
         f"""
-        <audio autoplay>
+        <audio id="player" autoplay muted>
             <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
         </audio>
+
+        <script>
+        const audio = document.getElementById("player");
+        if (audio) {{
+            audio.muted = false;
+            audio.play().catch(() => {{
+                console.log("Autoplay bloqueado");
+            }});
+        }}
+        </script>
         """,
         unsafe_allow_html=True
     )
