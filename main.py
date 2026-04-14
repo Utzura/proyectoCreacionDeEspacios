@@ -43,7 +43,7 @@ if st.session_state.esp32_connected:
     st.success("ESP32 conectado 🎉")
 
     audio_file = open("sonido.mp3", "rb")
-    st.audio(audio_file.read())
+    st.audio(audio_file.read(), autoplay=True)
 else:
     st.warning("Esperando conexión del ESP32...")
 
